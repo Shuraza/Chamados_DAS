@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface ComentarioRepository extends JpaRepository<Comentario, Long> {
     List<Comentario> findByChamadoId(Long chamadoId);
+    boolean existsByChamadoId(Long chamadoId);
 }
