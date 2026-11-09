@@ -59,8 +59,11 @@ O banco é recriado a cada reinício da aplicação.
 | Clientes | `POST/GET /clientes`, `GET/PUT/DELETE /clientes/{id}` |
 | Categorias | `POST/GET /categorias`, `GET/PUT/DELETE /categorias/{id}` |
 | Técnicos | `POST/GET /tecnicos`, `GET/PUT/DELETE /tecnicos/{id}` |
-| Chamados | `POST/GET /chamados`, `GET/PUT/DELETE /chamados/{id}`, `PATCH /chamados/{id}/status` |
+| Chamados | `POST/GET /chamados`, `GET/PUT/DELETE /chamados/{id}`, `PATCH /chamados/{id}/status`, `PATCH /chamados/{id}/atribuir` |
+| Chamados do cliente | `GET /clientes/{id}/chamados` |
 | Comentários | `POST/GET /chamados/{id}/comentarios` |
+
+`GET /chamados/{id}` devolve o chamado com cliente, categoria, técnico e comentários.
 
 </details>
 
@@ -97,6 +100,12 @@ Alterar status (`ABERTO`, `EM_ATENDIMENTO`, `AGUARDANDO_CLIENTE` ou `FECHADO`):
 { "status": "FECHADO" }
 ```
 
+Atribuir técnico:
+
+```json
+{ "tecnicoId": 1 }
+```
+
 Comentário:
 
 ```json
@@ -106,12 +115,27 @@ Comentário:
 </details>
 
 <details>
+<summary><strong>Filtros e paginação</strong></summary>
+
+`GET /chamados` e `GET /clientes/{id}/chamados` aceitam filtros opcionais e paginação:
+
+```
+GET /chamados?status=ABERTO&prioridade=ALTA&clienteId=1&page=0&size=10&sort=titulo,asc
+```
+
+- Filtros: `status`, `prioridade` e `clienteId` (podem ser combinados).
+- Ordenação padrão: `dataAbertura` decrescente.
+- Campos aceitos no `sort`: `id`, `titulo`, `dataAbertura`, `dataFechamento`, `prioridade`, `status`, `cliente.nome`, `categoria.nome`.
+
+</details>
+
+<details>
 <summary><strong>Regras de negócio</strong></summary>
 
 - E-mail de cliente e de técnico é único; nome de categoria é único.
 - Chamado nasce com status `ABERTO` e `dataAbertura` preenchida automaticamente.
 - Ao fechar o chamado, `dataFechamento` é preenchida.
-- Chamado fechado não pode ser alterado.
+- Chamado fechado não pode ser alterado, nem receber técnico ou comentário (retorna 409).
 - Não é possível excluir cliente, categoria ou técnico com chamados vinculados, nem chamado com comentários.
 
 </details>
@@ -124,18 +148,28 @@ Comentário:
 | 200 | Consulta/atualização com sucesso |
 | 201 | Registro criado |
 | 204 | Registro excluído |
-| 400 | Dados inválidos |
+| 400 | Dados inválidos, filtro ou ordenação inválida |
 | 404 | Registro não encontrado |
 | 409 | Regra de negócio violada (duplicidade, vínculo, chamado fechado) |
 
 </details>
 
 <details>
+<summary><strong>Testes</strong></summary>
+
+```
+.\mvnw test
+```
+
+- `repository`: testes com `@DataJpaTest` (persistência, restrições e filtros/paginação).
+- `controller`: testes com `@WebMvcTest` (status HTTP, validação e respostas de erro).
+- `service`: testes unitários com Mockito das regras de negócio do chamado.
+
+</details>
+
+<details>
 <summary><strong>Pendências (próximas etapas)</strong></summary>
 
-- `PATCH /chamados/{id}/atribuir` para atribuição de técnico
-- Filtros e paginação em `/chamados`
-- Testes automatizados (`@DataJpaTest` e `@WebMvcTest`)
 - Documentação OpenAPI e profile PostgreSQL
 
 </details>
