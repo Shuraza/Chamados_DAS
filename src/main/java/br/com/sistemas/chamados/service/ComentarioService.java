@@ -4,6 +4,8 @@ import br.com.sistemas.chamados.dto.ComentarioRequest;
 import br.com.sistemas.chamados.dto.ComentarioResponse;
 import br.com.sistemas.chamados.entity.Chamado;
 import br.com.sistemas.chamados.entity.Comentario;
+import br.com.sistemas.chamados.entity.StatusChamado;
+import br.com.sistemas.chamados.exception.ChamadoFechadoException;
 import br.com.sistemas.chamados.exception.RecursoNaoEncontradoException;
 import br.com.sistemas.chamados.repository.ChamadoRepository;
 import br.com.sistemas.chamados.repository.ComentarioRepository;
@@ -26,6 +28,9 @@ public class ComentarioService {
     @Transactional
     public ComentarioResponse criar(Long chamadoId, ComentarioRequest dto) {
         Chamado chamado = buscarChamado(chamadoId);
+        if (chamado.getStatus() == StatusChamado.FECHADO) {
+            throw new ChamadoFechadoException(chamadoId);
+        }
         Comentario salvo = repository.save(new Comentario(dto.texto(), dto.autor(), chamado));
         return ComentarioResponse.de(salvo);
     }

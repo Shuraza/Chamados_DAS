@@ -1,13 +1,18 @@
 package br.com.sistemas.chamados.service;
 
+import br.com.sistemas.chamados.dto.ChamadoAtribuirRequest;
+import br.com.sistemas.chamados.dto.ChamadoDetalheResponse;
 import br.com.sistemas.chamados.dto.ChamadoRequest;
 import br.com.sistemas.chamados.dto.ChamadoResponse;
 import br.com.sistemas.chamados.dto.ChamadoStatusRequest;
 import br.com.sistemas.chamados.entity.Categoria;
 import br.com.sistemas.chamados.entity.Chamado;
 import br.com.sistemas.chamados.entity.Cliente;
+import br.com.sistemas.chamados.entity.Prioridade;
 import br.com.sistemas.chamados.entity.StatusChamado;
 import br.com.sistemas.chamados.entity.Tecnico;
+import br.com.sistemas.chamados.exception.ChamadoFechadoException;
+import br.com.sistemas.chamados.exception.OrdenacaoInvalidaException;
 import br.com.sistemas.chamados.exception.RecursoNaoEncontradoException;
 import br.com.sistemas.chamados.exception.RegraNegocioException;
 import br.com.sistemas.chamados.repository.CategoriaRepository;
@@ -15,14 +20,23 @@ import br.com.sistemas.chamados.repository.ChamadoRepository;
 import br.com.sistemas.chamados.repository.ClienteRepository;
 import br.com.sistemas.chamados.repository.ComentarioRepository;
 import br.com.sistemas.chamados.repository.TecnicoRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class ChamadoService {
+
+    private static final Set<String> CAMPOS_ORDENACAO = new LinkedHashSet<>(List.of(
+            "id", "titulo", "dataAbertura", "dataFechamento", "prioridade", "status", "cliente.nome", "categoria.nome"
+    ));
 
     private final ChamadoRepository repository;
     private final ClienteRepository clienteRepository;
@@ -56,19 +70,26 @@ public class ChamadoService {
     }
 
     @Transactional(readOnly = true)
-    public List<ChamadoResponse> listar() {
-        return repository.findAll().stream().map(ChamadoResponse::de).toList();
+    public Page<ChamadoResponse> listar(StatusChamado status, Prioridade prioridade, Long clienteId, Pageable pageable) {
+        validarOrdenacao(pageable.getSort());
+        return repository.filtrar(status, prioridade, clienteId, pageable).map(ChamadoResponse::de);
     }
 
     @Transactional(readOnly = true)
-    public ChamadoResponse buscar(Long id) {
-        return ChamadoResponse.de(buscarEntity(id));
+    public Page<ChamadoResponse> listarPorCliente(Long clienteId, StatusChamado status, Prioridade prioridade, Pageable pageable) {
+        buscarCliente(clienteId);
+        return listar(status, prioridade, clienteId, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public ChamadoDetalheResponse buscar(Long id) {
+        return ChamadoDetalheResponse.de(buscarEntity(id));
     }
 
     @Transactional
     public ChamadoResponse atualizar(Long id, ChamadoRequest dto) {
-        Chamado chamado = buscarEntity(id);
-        validarAberto(chamado);
+        Chamado chamado = buscarEntityAberto(id);
+
         chamado.setTitulo(dto.titulo());
         chamado.setDescricao(dto.descricao());
         chamado.setPrioridade(dto.prioridade());
@@ -79,9 +100,17 @@ public class ChamadoService {
     }
 
     @Transactional
+    public ChamadoResponse atribuir(Long id, ChamadoAtribuirRequest dto) {
+        Chamado chamado = buscarEntityAberto(id);
+
+        chamado.setTecnico(buscarTecnico(dto.tecnicoId()));
+        return ChamadoResponse.de(chamado);
+    }
+
+    @Transactional
     public ChamadoResponse alterarStatus(Long id, ChamadoStatusRequest dto) {
-        Chamado chamado = buscarEntity(id);
-        validarAberto(chamado);
+        Chamado chamado = buscarEntityAberto(id);
+
         chamado.setStatus(dto.status());
         if (dto.status() == StatusChamado.FECHADO) {
             chamado.setDataFechamento(LocalDateTime.now());
@@ -98,9 +127,13 @@ public class ChamadoService {
         repository.delete(chamado);
     }
 
-    private void validarAberto(Chamado chamado) {
-        if (chamado.getStatus() == StatusChamado.FECHADO) {
-            throw new RegraNegocioException("Chamado " + chamado.getId() + " está fechado e não pode ser alterado");
+    // O sort vai direto para o JPQL, então só aceita campos conhecidos.
+    // tecnico.nome fica de fora porque o join esconderia os chamados sem técnico
+    private void validarOrdenacao(Sort sort) {
+        for (Sort.Order ordem : sort) {
+            if (!CAMPOS_ORDENACAO.contains(ordem.getProperty())) {
+                throw new OrdenacaoInvalidaException(ordem.getProperty(), CAMPOS_ORDENACAO);
+            }
         }
     }
 
@@ -108,6 +141,14 @@ public class ChamadoService {
         return repository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException(
                         "Chamado " + id + " não encontrado"));
+    }
+
+    private Chamado buscarEntityAberto(Long id) {
+        Chamado chamado = buscarEntity(id);
+        if (chamado.getStatus() == StatusChamado.FECHADO) {
+            throw new ChamadoFechadoException(id);
+        }
+        return chamado;
     }
 
     private Cliente buscarCliente(Long id) {

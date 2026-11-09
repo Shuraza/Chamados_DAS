@@ -13,6 +13,11 @@ spring:
       ddl-auto: "update"
     show-sql: true
 
+  data:
+    web:
+      pageable:
+        serialization-mode: "via-dto"
+
   h2:
     console:
       enabled: true
