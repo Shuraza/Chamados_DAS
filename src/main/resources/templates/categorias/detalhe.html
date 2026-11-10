@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${categoria.nome()})}"></head>
+<body>
+<header th:replace="~{fragments/layout :: nav('categorias')}"></header>
+
+<main>
+    <div class="titulo-pagina">
+        <h1 th:text="${categoria.nome()}">Categoria</h1>
+        <a th:href="@{/web/categorias}">&laquo; Voltar para categorias</a>
+    </div>
+
+    <div th:replace="~{fragments/layout :: alertas}"></div>
+
+    <div class="grade">
+        <section class="cartao">
+            <h2>Editar categoria</h2>
+            <form class="formulario" th:action="@{/web/categorias/{id}(id=${categoria.id()})}" th:object="${form}" method="post">
+                <label>Nome
+                    <input type="text" th:field="*{nome}" maxlength="100">
+                    <span class="erro-campo" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></span>
+                </label>
+                <label>Descrição
+                    <textarea th:field="*{descricao}" rows="3" maxlength="255"></textarea>
+                    <span class="erro-campo" th:if="${#fields.hasErrors('descricao')}" th:errors="*{descricao}"></span>
+                </label>
+                <button type="submit">Salvar</button>
+            </form>
+        </section>
+
+        <section class="cartao">
+            <h2>Ações</h2>
+            <a class="botao" th:href="@{/web/chamados/novo(categoriaId=${categoria.id()})}">+ Abrir chamado nesta categoria</a>
+            <form class="acao" th:action="@{/web/categorias/{id}/excluir(id=${categoria.id()})}" method="post"
+                  onsubmit="return confirm('Excluir esta categoria?')">
+                <button type="submit" class="perigo">Excluir categoria</button>
+            </form>
+            <p class="dica">Só é possível excluir categorias sem chamados vinculados.</p>
+        </section>
+    </div>
+
+    <section class="cartao">
+        <h2 th:text="'Chamados da categoria (' + ${pagina.totalElements} + ')'">Chamados da categoria</h2>
+        <div th:replace="~{fragments/chamados :: tabela(${pagina})}"></div>
+        <div th:replace="~{fragments/chamados :: paginacao(${pagina}, '/web/categorias/' + ${categoria.id()})}"></div>
+    </section>
+</main>
+</body>
+</html>

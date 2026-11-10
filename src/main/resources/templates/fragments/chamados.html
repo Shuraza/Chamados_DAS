@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- Tabela de chamados usada na listagem e nas páginas de cliente, categoria e técnico -->
+<div th:fragment="tabela(pagina)">
+    <p class="vazio" th:if="${pagina.empty}">Nenhum chamado encontrado.</p>
+    <table th:unless="${pagina.empty}">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Título</th>
+            <th>Status</th>
+            <th>Prioridade</th>
+            <th>Cliente</th>
+            <th>Categoria</th>
+            <th>Técnico</th>
+            <th>Abertura</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="c : ${pagina.content}">
+            <td><a th:href="@{/web/chamados/{id}(id=${c.id()})}" th:text="${c.id()}">1</a></td>
+            <td><a th:href="@{/web/chamados/{id}(id=${c.id()})}" th:text="${c.titulo()}">Título</a></td>
+            <td><span th:class="'badge status-' + ${#strings.toLowerCase(c.status())}" th:text="${c.status()}">ABERTO</span></td>
+            <td><span th:class="'badge prioridade-' + ${#strings.toLowerCase(c.prioridade())}" th:text="${c.prioridade()}">ALTA</span></td>
+            <td><a th:href="@{/web/clientes/{id}(id=${c.clienteId()})}" th:text="${nomesClientes[c.clienteId()]}">Cliente</a></td>
+            <td><a th:href="@{/web/categorias/{id}(id=${c.categoriaId()})}" th:text="${nomesCategorias[c.categoriaId()]}">Categoria</a></td>
+            <td>
+                <a th:if="${c.tecnicoId() != null}" th:href="@{/web/tecnicos/{id}(id=${c.tecnicoId()})}"
+                   th:text="${nomesTecnicos[c.tecnicoId()]}">Técnico</a>
+                <span class="sem-valor" th:if="${c.tecnicoId() == null}">sem técnico</span>
+            </td>
+            <td th:text="${#temporals.format(c.dataAbertura(), 'dd/MM/yyyy HH:mm')}">01/01/2026 10:00</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Paginação simples, sem filtros (páginas de cliente, categoria e técnico) -->
+<div th:fragment="paginacao(pagina, base)" class="paginacao" th:if="${pagina.totalPages > 1}">
+    <a th:if="${pagina.hasPrevious()}" th:href="@{${base}(page=${pagina.number - 1})}">&laquo; Anterior</a>
+    <span th:text="'Página ' + ${pagina.number + 1} + ' de ' + ${pagina.totalPages}">Página 1 de 1</span>
+    <a th:if="${pagina.hasNext()}" th:href="@{${base}(page=${pagina.number + 1})}">Próxima &raquo;</a>
+</div>
+
+</body>
+</html>

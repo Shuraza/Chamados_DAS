@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Abrir chamado')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: nav('chamados')}"></header>
+
+<main>
+    <div class="titulo-pagina">
+        <h1>Abrir chamado</h1>
+        <a th:href="@{/web/chamados}">&laquo; Voltar para chamados</a>
+    </div>
+
+    <div th:replace="~{fragments/layout :: alertas}"></div>
+
+    <form class="cartao formulario" th:action="@{/web/chamados}" th:object="${form}" method="post">
+        <label>Título
+            <input type="text" th:field="*{titulo}" maxlength="100">
+            <span class="erro-campo" th:if="${#fields.hasErrors('titulo')}" th:errors="*{titulo}"></span>
+        </label>
+
+        <label>Descrição
+            <textarea th:field="*{descricao}" rows="5" maxlength="1000"></textarea>
+            <span class="erro-campo" th:if="${#fields.hasErrors('descricao')}" th:errors="*{descricao}"></span>
+        </label>
+
+        <div class="linha">
+            <label>Prioridade
+                <select th:field="*{prioridade}">
+                    <option value="">Selecione</option>
+                    <option th:each="p : ${prioridades}" th:value="${p}" th:text="${p}"></option>
+                </select>
+                <span class="erro-campo" th:if="${#fields.hasErrors('prioridade')}" th:errors="*{prioridade}"></span>
+            </label>
+
+            <label>Cliente
+                <select th:field="*{clienteId}">
+                    <option value="">Selecione</option>
+                    <option th:each="c : ${clientes}" th:value="${c.id()}" th:text="${c.nome()}"></option>
+                </select>
+                <span class="erro-campo" th:if="${#fields.hasErrors('clienteId')}" th:errors="*{clienteId}"></span>
+            </label>
+        </div>
+
+        <div class="linha">
+            <label>Categoria
+                <select th:field="*{categoriaId}">
+                    <option value="">Selecione</option>
+                    <option th:each="c : ${categorias}" th:value="${c.id()}" th:text="${c.nome()}"></option>
+                </select>
+                <span class="erro-campo" th:if="${#fields.hasErrors('categoriaId')}" th:errors="*{categoriaId}"></span>
+            </label>
+
+            <label>Técnico (opcional)
+                <select th:field="*{tecnicoId}">
+                    <option value="">Sem técnico</option>
+                    <option th:each="t : ${tecnicos}" th:value="${t.id()}" th:text="${t.nome()}"></option>
+                </select>
+            </label>
+        </div>
+
+        <div>
+
+
+        <p class="dica" th:if="${#lists.isEmpty(clientes) or #lists.isEmpty(categorias)}">
+            Para abrir um chamado é preciso ter ao menos um
+            <a th:href="@{/web/clientes}">cliente</a> e uma <a th:href="@{/web/categorias}">categoria</a> cadastrados.
+        </p>
+        </div>
+        <div>
+
+        <button type="submit">Abrir chamado</button>
+        </div>
+
+    </form>
+</main>
+</body>
+</html>

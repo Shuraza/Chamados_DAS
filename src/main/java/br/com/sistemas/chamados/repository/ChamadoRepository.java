@@ -21,6 +21,12 @@ public interface ChamadoRepository extends JpaRepository<Chamado, Long> {
             """)
     Page<Chamado> filtrar(StatusChamado status, Prioridade prioridade, Long clienteId, Pageable pageable);
 
+    @EntityGraph(attributePaths = {"cliente", "categoria", "tecnico"})
+    Page<Chamado> findByCategoriaId(Long categoriaId, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"cliente", "categoria", "tecnico"})
+    Page<Chamado> findByTecnicoId(Long tecnicoId, Pageable pageable);
+
     boolean existsByClienteId(Long clienteId);
     boolean existsByCategoriaId(Long categoriaId);
     boolean existsByTecnicoId(Long tecnicoId);

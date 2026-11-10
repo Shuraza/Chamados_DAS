@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${tecnico.nome()})}"></head>
+<body>
+<header th:replace="~{fragments/layout :: nav('tecnicos')}"></header>
+
+<main>
+    <div class="titulo-pagina">
+        <h1 th:text="${tecnico.nome()}">Técnico</h1>
+        <a th:href="@{/web/tecnicos}">&laquo; Voltar para técnicos</a>
+    </div>
+
+    <div th:replace="~{fragments/layout :: alertas}"></div>
+
+    <div class="grade">
+        <section class="cartao">
+            <h2>Editar técnico</h2>
+            <form class="formulario" th:action="@{/web/tecnicos/{id}(id=${tecnico.id()})}" th:object="${form}" method="post">
+                <label>Nome
+                    <input type="text" th:field="*{nome}" maxlength="100">
+                    <span class="erro-campo" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></span>
+                </label>
+                <label>E-mail
+                    <input type="email" th:field="*{email}">
+                    <span class="erro-campo" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+                </label>
+                <label>Perfil
+                    <select th:field="*{perfil}">
+                        <option value="">Selecione</option>
+                        <option th:each="p : ${perfis}" th:value="${p}" th:text="${p}"></option>
+                    </select>
+                    <span class="erro-campo" th:if="${#fields.hasErrors('perfil')}" th:errors="*{perfil}"></span>
+                </label>
+                <button type="submit">Salvar</button>
+            </form>
+        </section>
+
+        <section class="cartao">
+            <h2>Ações</h2>
+            <a class="botao" th:href="@{/web/chamados/novo(tecnicoId=${tecnico.id()})}">+ Abrir chamado já atribuído a este técnico</a>
+            <form class="acao" th:action="@{/web/tecnicos/{id}/excluir(id=${tecnico.id()})}" method="post"
+                  onsubmit="return confirm('Excluir este técnico?')">
+                <button type="submit" class="perigo">Excluir técnico</button>
+            </form>
+            <p class="dica">Só é possível excluir técnicos sem chamados atribuídos.</p>
+        </section>
+    </div>
+
+    <section class="cartao">
+        <h2 th:text="'Chamados atribuídos (' + ${pagina.totalElements} + ')'">Chamados atribuídos</h2>
+        <div th:replace="~{fragments/chamados :: tabela(${pagina})}"></div>
+        <div th:replace="~{fragments/chamados :: paginacao(${pagina}, '/web/tecnicos/' + ${tecnico.id()})}"></div>
+    </section>
+</main>
+</body>
+</html>

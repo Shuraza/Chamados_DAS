@@ -82,6 +82,20 @@ public class ChamadoService {
     }
 
     @Transactional(readOnly = true)
+    public Page<ChamadoResponse> listarPorCategoria(Long categoriaId, Pageable pageable) {
+        buscarCategoria(categoriaId);
+        validarOrdenacao(pageable.getSort());
+        return repository.findByCategoriaId(categoriaId, pageable).map(ChamadoResponse::de);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ChamadoResponse> listarPorTecnico(Long tecnicoId, Pageable pageable) {
+        buscarTecnico(tecnicoId);
+        validarOrdenacao(pageable.getSort());
+        return repository.findByTecnicoId(tecnicoId, pageable).map(ChamadoResponse::de);
+    }
+
+    @Transactional(readOnly = true)
     public ChamadoDetalheResponse buscar(Long id) {
         return ChamadoDetalheResponse.de(buscarEntity(id));
     }
