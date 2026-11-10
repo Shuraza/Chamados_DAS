@@ -6,7 +6,8 @@ API REST para gestão de chamados de suporte, desenvolvida na disciplina de Desi
 <summary><strong>Tecnologias</strong></summary>
 
 - Java 21
-- Spring Boot 4.1.1 (Web, Data JPA, Validation)
+- Spring Boot 4.1.1 (Web, Data JPA, Validation, Thymeleaf)
+- springdoc-openapi 3.2.0 (OpenAPI + Swagger UI)
 - H2 Database (em memória)
 - Maven
 
@@ -25,6 +26,8 @@ Controller → Service → Repository → Entity, com DTOs para entrada/saída e
 | `repository` | Acesso a dados via Spring Data JPA |
 | `entity` | Mapeamento das tabelas do banco |
 | `exception` | Exceções de domínio e padronização das respostas de erro |
+| `web` | Telas Thymeleaf (controllers MVC e formulários) |
+| `config` | Configuração da documentação OpenAPI |
 
 </details>
 
@@ -37,6 +40,13 @@ Controller → Service → Repository → Entity, com DTOs para entrada/saída e
 
 A aplicação sobe em `http://localhost:8080`.
 
+| Endereço | O que é |
+|---|---|
+| `http://localhost:8080/` | Front-end (redireciona para `/web/chamados`) |
+| `http://localhost:8080/swagger-ui.html` | Documentação da API (Swagger UI) |
+| `http://localhost:8080/v3/api-docs` | Especificação OpenAPI em JSON |
+| `http://localhost:8080/h2-console` | Console do banco H2 |
+
 </details>
 
 <details>
@@ -48,6 +58,31 @@ A aplicação sobe em `http://localhost:8080`.
 - Senha: em branco
 
 O banco é recriado a cada reinício da aplicação.
+
+</details>
+
+<details>
+<summary><strong>Front-end (Thymeleaf)</strong></summary>
+
+Cada entidade tem sua página, e elas são interligadas:
+
+| Página | Conteúdo |
+|---|---|
+| `/web/chamados` | Lista com filtros (status, prioridade, cliente) e paginação |
+| `/web/chamados/novo` | Abertura de chamado |
+| `/web/chamados/{id}` | Detalhe com comentários, alteração de status, atribuição de técnico e exclusão |
+| `/web/clientes` e `/web/clientes/{id}` | Cadastro, edição e chamados do cliente |
+| `/web/categorias` e `/web/categorias/{id}` | Cadastro, edição e chamados da categoria |
+| `/web/tecnicos` e `/web/tecnicos/{id}` | Cadastro, edição e chamados atribuídos ao técnico |
+
+Na tabela de chamados, o cliente, a categoria e o técnico são links para as respectivas páginas. A página de cada cliente, categoria e técnico tem um atalho para abrir um chamado já preenchido.
+
+</details>
+
+<details>
+<summary><strong>Documentação da API (OpenAPI)</strong></summary>
+
+A documentação é gerada pelo springdoc a partir dos controllers REST, com `@Tag` e `@Operation`, e fica disponível no Swagger UI em `/swagger-ui.html`. As rotas `/web/**` do front-end não entram na documentação.
 
 </details>
 
@@ -164,12 +199,14 @@ GET /chamados?status=ABERTO&prioridade=ALTA&clienteId=1&page=0&size=10&sort=titu
 - `repository`: testes com `@DataJpaTest` (persistência, restrições e filtros/paginação).
 - `controller`: testes com `@WebMvcTest` (status HTTP, validação e respostas de erro).
 - `service`: testes unitários com Mockito das regras de negócio do chamado.
+- `web`: testes com `@WebMvcTest` das telas Thymeleaf (renderização, formulários e redirecionamentos).
+- `OpenApiDocumentacaoTest`: confere se o `/v3/api-docs` documenta a API REST.
 
 </details>
 
 <details>
 <summary><strong>Pendências (próximas etapas)</strong></summary>
 
-- Documentação OpenAPI e profile PostgreSQL
+- Profile PostgreSQL
 
 </details>
