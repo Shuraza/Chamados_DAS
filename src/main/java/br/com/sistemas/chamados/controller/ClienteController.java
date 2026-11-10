@@ -8,6 +8,8 @@ import br.com.sistemas.chamados.entity.Prioridade;
 import br.com.sistemas.chamados.entity.StatusChamado;
 import br.com.sistemas.chamados.service.ChamadoService;
 import br.com.sistemas.chamados.service.ClienteService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +22,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
+@Tag(name = "Clientes", description = "Cadastro de clientes")
 @RequestMapping("/clientes")
 public class ClienteController {
 
@@ -31,6 +34,7 @@ public class ClienteController {
         this.chamadoService = chamadoService;
     }
 
+    @Operation(summary = "Cadastra um cliente")
     @PostMapping
     public ResponseEntity<ClienteResponse> criar(
             @Valid @RequestBody ClienteRequest dto) {
@@ -38,16 +42,19 @@ public class ClienteController {
         return ResponseEntity.created(URI.create("/clientes/" + criado.id())).body(criado);
     }
 
+    @Operation(summary = "Lista todos os clientes")
     @GetMapping
     public List<ClienteResponse> listar() {
         return service.listar();
     }
 
+    @Operation(summary = "Busca um cliente pelo id")
     @GetMapping("/{id}")
     public ClienteResponse buscar(@PathVariable Long id) {
         return service.buscar(id);
     }
 
+    @Operation(summary = "Lista os chamados de um cliente, com filtros e paginação")
     @GetMapping("/{id}/chamados")
     public Page<ChamadoResponse> listarChamados(
             @PathVariable Long id,
@@ -57,6 +64,7 @@ public class ClienteController {
         return chamadoService.listarPorCliente(id, status, prioridade, pageable);
     }
 
+    @Operation(summary = "Atualiza um cliente")
     @PutMapping("/{id}")
     public ClienteResponse atualizar(
             @PathVariable Long id,
@@ -64,6 +72,7 @@ public class ClienteController {
         return service.atualizar(id, dto);
     }
 
+    @Operation(summary = "Exclui um cliente sem chamados vinculados")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> excluir(@PathVariable Long id) {
         service.excluir(id);
