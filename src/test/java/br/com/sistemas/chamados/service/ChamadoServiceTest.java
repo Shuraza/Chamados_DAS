@@ -159,4 +159,22 @@ class ChamadoServiceTest {
                 .isInstanceOf(RecursoNaoEncontradoException.class)
                 .hasMessage("Cliente 99 não encontrado");
     }
+
+    @Test
+    void listarPorCategoriaInexistenteFalha() {
+        when(categoriaRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.listarPorCategoria(99L, PageRequest.of(0, 10)))
+                .isInstanceOf(RecursoNaoEncontradoException.class)
+                .hasMessage("Categoria 99 não encontrada");
+    }
+
+    @Test
+    void listarPorTecnicoInexistenteFalha() {
+        when(tecnicoRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.listarPorTecnico(99L, PageRequest.of(0, 10)))
+                .isInstanceOf(RecursoNaoEncontradoException.class)
+                .hasMessage("Técnico 99 não encontrado");
+    }
 }

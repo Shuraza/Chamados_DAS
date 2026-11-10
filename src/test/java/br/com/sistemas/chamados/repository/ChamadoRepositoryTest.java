@@ -150,6 +150,29 @@ class ChamadoRepositoryTest {
     }
 
     @Test
+    void findByCategoriaId() {
+        Categoria software = categoriaRepository.save(new Categoria("Software", null));
+        criarMassa();
+        repository.save(new Chamado("Erro no ERP", "Descrição", Prioridade.MEDIA, maria, software, null));
+
+        Page<Chamado> pagina = repository.findByCategoriaId(software.getId(), PAGINA);
+
+        assertThat(pagina.getContent()).extracting(Chamado::getTitulo).containsExactly("Erro no ERP");
+    }
+
+    @Test
+    void findByTecnicoId() {
+        criarMassa();
+        Chamado atribuido = chamado("Troca de monitor", Prioridade.BAIXA, pedro);
+        atribuido.setTecnico(carlos);
+        repository.save(atribuido);
+
+        Page<Chamado> pagina = repository.findByTecnicoId(carlos.getId(), PAGINA);
+
+        assertThat(pagina.getContent()).extracting(Chamado::getTitulo).containsExactly("Troca de monitor");
+    }
+
+    @Test
     void existsByClienteId() {
         repository.save(chamado("PC não liga", Prioridade.ALTA, maria));
 
