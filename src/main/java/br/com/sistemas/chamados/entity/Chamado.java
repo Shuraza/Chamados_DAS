@@ -3,6 +3,8 @@ package br.com.sistemas.chamados.entity;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "chamados")
@@ -42,6 +44,10 @@ public class Chamado {
     @ManyToOne
     @JoinColumn(name = "tecnico_id")
     private Tecnico tecnico;
+
+    @OneToMany(mappedBy = "chamado")
+    @OrderBy("data ASC")
+    private List<Comentario> comentarios = new ArrayList<>();
 
     public Chamado() {
     }
@@ -128,5 +134,9 @@ public class Chamado {
 
     public void setTecnico(Tecnico tecnico) {
         this.tecnico = tecnico;
+    }
+
+    public List<Comentario> getComentarios() {
+        return comentarios;
     }
 }

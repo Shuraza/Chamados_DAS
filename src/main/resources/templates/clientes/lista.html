@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Clientes')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: nav('clientes')}"></header>
+
+<main>
+    <div class="titulo-pagina">
+        <h1>Clientes</h1>
+    </div>
+
+    <div th:replace="~{fragments/layout :: alertas}"></div>
+
+    <div class="grade">
+        <section class="cartao">
+            <h2>Cadastrados</h2>
+            <p class="vazio" th:if="${#lists.isEmpty(clientes)}">Nenhum cliente cadastrado.</p>
+            <table th:unless="${#lists.isEmpty(clientes)}">
+                <thead>
+                <tr><th>Nome</th><th>E-mail</th><th>Telefone</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="c : ${clientes}">
+                    <td><a th:href="@{/web/clientes/{id}(id=${c.id()})}" th:text="${c.nome()}">Nome</a></td>
+                    <td th:text="${c.email()}">email</td>
+                    <td th:text="${c.telefone() != null} ? ${c.telefone()} : '-'">-</td>
+                </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="cartao">
+            <h2>Novo cliente</h2>
+            <form class="formulario" th:action="@{/web/clientes}" th:object="${form}" method="post">
+                <label>Nome
+                    <input type="text" th:field="*{nome}" maxlength="100">
+                    <span class="erro-campo" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></span>
+                </label>
+                <label>E-mail
+                    <input type="email" th:field="*{email}">
+                    <span class="erro-campo" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+                </label>
+                <label>Telefone
+                    <input type="text" th:field="*{telefone}" maxlength="20">
+                    <span class="erro-campo" th:if="${#fields.hasErrors('telefone')}" th:errors="*{telefone}"></span>
+                </label>
+                <button type="submit">Cadastrar</button>
+            </form>
+        </section>
+    </div>
+</main>
+</body>
+</html>

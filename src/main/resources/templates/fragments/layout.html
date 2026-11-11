@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(titulo)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${titulo} + ' | Sistema de Chamados'">Sistema de Chamados</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+
+<header th:fragment="nav(ativo)" class="topo">
+    <a class="marca" th:href="@{/web/chamados}">Sistema de Chamados</a>
+    <nav>
+        <a th:href="@{/web/chamados}" th:classappend="${ativo == 'chamados'} ? 'ativo'">Chamados</a>
+        <a th:href="@{/web/clientes}" th:classappend="${ativo == 'clientes'} ? 'ativo'">Clientes</a>
+        <a th:href="@{/web/categorias}" th:classappend="${ativo == 'categorias'} ? 'ativo'">Categorias</a>
+        <a th:href="@{/web/tecnicos}" th:classappend="${ativo == 'tecnicos'} ? 'ativo'">Técnicos</a>
+        <a th:href="@{/swagger-ui.html}" target="_blank">API (Swagger)</a>
+    </nav>
+</header>
+
+<div th:fragment="alertas">
+    <p class="alerta sucesso" th:if="${sucesso}" th:text="${sucesso}"></p>
+    <p class="alerta erro" th:if="${erro}" th:text="${erro}"></p>
+</div>
+
+</body>
+</html>

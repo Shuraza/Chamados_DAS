@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Categorias')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: nav('categorias')}"></header>
+
+<main>
+    <div class="titulo-pagina">
+        <h1>Categorias</h1>
+    </div>
+
+    <div th:replace="~{fragments/layout :: alertas}"></div>
+
+    <div class="grade">
+        <section class="cartao">
+            <h2>Cadastrados</h2>
+            <p class="vazio" th:if="${#lists.isEmpty(categorias)}">Nenhuma categoria cadastrada.</p>
+            <table th:unless="${#lists.isEmpty(categorias)}">
+                <thead>
+                <tr><th>Nome</th><th>Descrição</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="c : ${categorias}">
+                    <td><a th:href="@{/web/categorias/{id}(id=${c.id()})}" th:text="${c.nome()}">Nome</a></td>
+                    <td th:text="${c.descricao() != null} ? ${c.descricao()} : '-'">-</td>
+                </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="cartao">
+            <h2>Nova categoria</h2>
+            <form class="formulario" th:action="@{/web/categorias}" th:object="${form}" method="post">
+                <label>Nome
+                    <input type="text" th:field="*{nome}" maxlength="100">
+                    <span class="erro-campo" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></span>
+                </label>
+                <label>Descrição
+                    <textarea th:field="*{descricao}" rows="3" maxlength="255"></textarea>
+                    <span class="erro-campo" th:if="${#fields.hasErrors('descricao')}" th:errors="*{descricao}"></span>
+                </label>
+                <button type="submit">Cadastrar</button>
+            </form>
+        </section>
+    </div>
+</main>
+</body>
+</html>

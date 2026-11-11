@@ -27,7 +27,7 @@ public class ClienteService {
     @Transactional
     public ClienteResponse criar(ClienteRequest dto) {
         if (repository.existsByEmail(dto.email())) {
-            throw new RegraNegocioException("Já existe cliente com o e-mail" + dto.email());
+            throw new RegraNegocioException("Já existe cliente com o e-mail " + dto.email());
         }
         Cliente salvo = repository.save(new Cliente(dto.nome(), dto.email(), dto.telefone()));
         return ClienteResponse.de(salvo);
@@ -47,7 +47,7 @@ public class ClienteService {
     public ClienteResponse atualizar(Long id, ClienteRequest dto) {
         Cliente cliente = buscarEntity(id);
         if (repository.existsByEmailAndIdNot(dto.email(),id)) {
-            throw new RegraNegocioException("Já existe cliente com o e-mail" + dto.email());
+            throw new RegraNegocioException("Já existe cliente com o e-mail " + dto.email());
         }
         cliente.setNome(dto.nome());
         cliente.setEmail(dto.email());

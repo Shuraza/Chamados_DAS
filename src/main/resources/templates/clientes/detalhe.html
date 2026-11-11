@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${cliente.nome()})}"></head>
+<body>
+<header th:replace="~{fragments/layout :: nav('clientes')}"></header>
+
+<main>
+    <div class="titulo-pagina">
+        <h1 th:text="${cliente.nome()}">Cliente</h1>
+        <a th:href="@{/web/clientes}">&laquo; Voltar para clientes</a>
+    </div>
+
+    <div th:replace="~{fragments/layout :: alertas}"></div>
+
+    <div class="grade">
+        <section class="cartao">
+            <h2>Editar cliente</h2>
+            <form class="formulario" th:action="@{/web/clientes/{id}(id=${cliente.id()})}" th:object="${form}" method="post">
+                <label>Nome
+                    <input type="text" th:field="*{nome}" maxlength="100">
+                    <span class="erro-campo" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></span>
+                </label>
+                <label>E-mail
+                    <input type="email" th:field="*{email}">
+                    <span class="erro-campo" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+                </label>
+                <label>Telefone
+                    <input type="text" th:field="*{telefone}" maxlength="20">
+                    <span class="erro-campo" th:if="${#fields.hasErrors('telefone')}" th:errors="*{telefone}"></span>
+                </label>
+                <button type="submit">Salvar</button>
+            </form>
+        </section>
+
+        <section class="cartao">
+            <h2>Ações</h2>
+            <a class="botao" th:href="@{/web/chamados/novo(clienteId=${cliente.id()})}">+ Abrir chamado para este cliente</a>
+            <form class="acao" th:action="@{/web/clientes/{id}/excluir(id=${cliente.id()})}" method="post"
+                  onsubmit="return confirm('Excluir este cliente?')">
+                <button type="submit" class="perigo">Excluir cliente</button>
+            </form>
+            <p class="dica">Só é possível excluir clientes sem chamados vinculados.</p>
+        </section>
+    </div>
+
+    <section class="cartao">
+        <h2 th:text="'Chamados do cliente (' + ${pagina.totalElements} + ')'">Chamados do cliente</h2>
+        <div th:replace="~{fragments/chamados :: tabela(${pagina})}"></div>
+        <div th:replace="~{fragments/chamados :: paginacao(${pagina}, '/web/clientes/' + ${cliente.id()})}"></div>
+    </section>
+</main>
+</body>
+</html>

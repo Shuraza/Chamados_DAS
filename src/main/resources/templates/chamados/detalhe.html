@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Chamado #' + ${chamado.id()})}"></head>
+<body>
+<header th:replace="~{fragments/layout :: nav('chamados')}"></header>
+
+<main th:with="fechado=${chamado.status().name() == 'FECHADO'}">
+    <div class="titulo-pagina">
+        <h1 th:text="'#' + ${chamado.id()} + ' - ' + ${chamado.titulo()}">#1 - Título</h1>
+        <a th:href="@{/web/chamados}">&laquo; Voltar para chamados</a>
+    </div>
+
+    <div th:replace="~{fragments/layout :: alertas}"></div>
+
+    <div class="grade">
+        <section class="cartao">
+            <h2>Dados do chamado</h2>
+            <dl>
+                <dt>Status</dt>
+                <dd><span th:class="'badge status-' + ${#strings.toLowerCase(chamado.status())}" th:text="${chamado.status()}">ABERTO</span></dd>
+                <dt>Prioridade</dt>
+                <dd><span th:class="'badge prioridade-' + ${#strings.toLowerCase(chamado.prioridade())}" th:text="${chamado.prioridade()}">ALTA</span></dd>
+                <dt>Cliente</dt>
+                <dd><a th:href="@{/web/clientes/{id}(id=${chamado.cliente().id()})}" th:text="${chamado.cliente().nome()}">Cliente</a></dd>
+                <dt>Categoria</dt>
+                <dd><a th:href="@{/web/categorias/{id}(id=${chamado.categoria().id()})}" th:text="${chamado.categoria().nome()}">Categoria</a></dd>
+                <dt>Técnico</dt>
+                <dd>
+                    <a th:if="${chamado.tecnico() != null}" th:href="@{/web/tecnicos/{id}(id=${chamado.tecnico().id()})}"
+                       th:text="${chamado.tecnico().nome()}">Técnico</a>
+                    <span class="sem-valor" th:if="${chamado.tecnico() == null}">sem técnico</span>
+                </dd>
+                <dt>Abertura</dt>
+                <dd th:text="${#temporals.format(chamado.dataAbertura(), 'dd/MM/yyyy HH:mm')}">01/01/2026 10:00</dd>
+                <dt>Fechamento</dt>
+                <dd th:text="${chamado.dataFechamento() != null} ? ${#temporals.format(chamado.dataFechamento(), 'dd/MM/yyyy HH:mm')} : '-'">-</dd>
+            </dl>
+            <h3>Descrição</h3>
+            <p class="texto" th:text="${chamado.descricao()}">Descrição</p>
+        </section>
+
+        <section class="cartao">
+            <h2>Ações</h2>
+            <p class="dica" th:if="${fechado}">Chamado fechado: não pode mais ser alterado.</p>
+
+            <form th:unless="${fechado}" class="acao" th:action="@{/web/chamados/{id}/status(id=${chamado.id()})}" method="post">
+                <label>Alterar status
+                    <select name="status">
+                        <option th:each="s : ${statusOpcoes}" th:value="${s}" th:text="${s}" th:selected="${s == chamado.status()}"></option>
+                    </select>
+                </label>
+                <button type="submit">Salvar status</button>
+            </form>
+
+            <form th:unless="${fechado}" class="acao" th:action="@{/web/chamados/{id}/atribuir(id=${chamado.id()})}" method="post">
+                <label>Atribuir técnico
+                    <select name="tecnicoId">
+                        <option value="">Selecione</option>
+                        <option th:each="t : ${tecnicos}" th:value="${t.id()}" th:text="${t.nome()}"
+                                th:selected="${chamado.tecnico() != null and t.id() == chamado.tecnico().id()}"></option>
+                    </select>
+                </label>
+                <button type="submit">Atribuir</button>
+            </form>
+
+            <form class="acao" th:action="@{/web/chamados/{id}/excluir(id=${chamado.id()})}" method="post"
+                  onsubmit="return confirm('Excluir este chamado?')">
+                <button type="submit" class="perigo">Excluir chamado</button>
+            </form>
+        </section>
+    </div>
+
+    <section class="cartao">
+        <h2 th:text="'Comentários (' + ${#lists.size(chamado.comentarios())} + ')'">Comentários</h2>
+        <p class="vazio" th:if="${#lists.isEmpty(chamado.comentarios())}">Nenhum comentário ainda.</p>
+        <ul class="comentarios">
+            <li th:each="c : ${chamado.comentarios()}">
+                <div class="comentario-topo">
+                    <strong th:text="${c.autor()}">Autor</strong>
+                    <span th:text="${#temporals.format(c.data(), 'dd/MM/yyyy HH:mm')}">01/01/2026 10:00</span>
+                </div>
+                <p th:text="${c.texto()}">Texto</p>
+            </li>
+        </ul>
+
+        <form th:unless="${fechado}" class="formulario" th:action="@{/web/chamados/{id}/comentarios(id=${chamado.id()})}"
+              th:object="${comentario}" method="post">
+            <label>Autor
+                <input type="text" th:field="*{autor}" maxlength="100">
+                <span class="erro-campo" th:if="${#fields.hasErrors('autor')}" th:errors="*{autor}"></span>
+            </label>
+            <label>Comentário
+                <textarea th:field="*{texto}" rows="3" maxlength="1000"></textarea>
+                <span class="erro-campo" th:if="${#fields.hasErrors('texto')}" th:errors="*{texto}"></span>
+            </label>
+            <button type="submit">Adicionar comentário</button>
+        </form>
+    </section>
+</main>
+</body>
+</html>
